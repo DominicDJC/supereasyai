@@ -25,4 +25,7 @@ CI = "https://github.com/DominicDJC/supereasyai/actions"
 
 
 [project.optional-dependencies]
-test = ["pytest"]
+test = [
+    "pytest",
+    "python-dotenv"
+]
