@@ -134,14 +134,16 @@ def pack_tool_calls(tool_calls: list[ToolCall]) -> list[dict]:
 
 def pack_messages(messages: list[Message]) -> list[dict]:
     packed: list[dict] = []
-    for message in copy.deepcopy(messages):
-        data: dict = vars(message)
+    for message in messages:
+        data: dict = {}
         if isinstance(message, AssistantMessageStream):
             data = {
                 "role": "assistant",
                 "content": message.content,
                 "tool_calls": message.tool_calls
             }
+        else:
+            data = vars(copy.deepcopy(message))
         if type(message.content) == list:
             data["content"] = pack_content(message.content)
         if "tool_calls" in data and message.tool_calls:
