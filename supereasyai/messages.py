@@ -146,8 +146,11 @@ def pack_messages(messages: list[Message]) -> list[dict]:
             data = vars(copy.deepcopy(message))
         if type(message.content) == list:
             data["content"] = pack_content(message.content)
-        if "tool_calls" in data and message.tool_calls:
-            data["tool_calls"] = pack_tool_calls(message.tool_calls)
+        if "tool_calls" in data:
+            if message.tool_calls == None:
+                data.pop("tool_calls")
+            else:
+                data["tool_calls"] = pack_tool_calls(message.tool_calls)
         packed.append(data)
     return packed
 
