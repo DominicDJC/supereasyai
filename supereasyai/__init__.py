@@ -28,13 +28,17 @@ from supereasyai.messages import (
     run_tool_calls
 )
 from supereasyai.bases import (
-    OpenAIBase as __OpenAIBase__,
-    GroqBase as __GroqBase__
+    OpenAIBase,
+    GroqBase,
+    OllamaBase
 )
 
 
 def create_openai(api_key: str | None = None, model: str | None = None, api_environment_key: str = "AI_API_KEY") -> AI:
-    return AI(base=__OpenAIBase__(api_key=api_key, api_environment_key=api_environment_key), model=model)
+    return AI(base=OpenAIBase(api_key=api_key, api_environment_key=api_environment_key), model=model)
 
 def create_groq(api_key: str | None = None, model: str | None = None, api_environment_key: str = "AI_API_KEY") -> AI:
-    return AI(base=__GroqBase__(api_key=api_key, api_environment_key=api_environment_key), model=model)
+    return AI(base=GroqBase(api_key=api_key, api_environment_key=api_environment_key), model=model)
+
+def create_ollama(model: str | None = None) -> AI:
+    return AI(base=OllamaBase(), model=model)
