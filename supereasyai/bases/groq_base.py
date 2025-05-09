@@ -2,7 +2,7 @@ import os, json, copy
 from types import FunctionType
 from typing import Any, Literal, Iterator
 from supereasyai.ai import AIBase, function_to_tool
-from supereasyai.messages import AssistantMessage, AssistantMessageStream, Message, ToolCall, pack_messages, SystemMessage
+from supereasyai.messages import AssistantMessage, AssistantMessageStream, Message, ToolCall, pack_messages, SystemMessage, FormattedAssistantMessage
 from doms_json import generate_json_schema, json_call
 from groq import Groq as GroqClient, Stream, NOT_GIVEN
 from groq.types.chat import ChatCompletion, ChatCompletionChunk
@@ -82,7 +82,7 @@ class GroqBase(AIBase):
               messages: list[Message],
               format: type,
               model: str | None = None,
-              temperature: float | None = None) -> Any:
+              temperature: float | None = None) -> FormattedAssistantMessage:
         schema_message: str = f"Your output must be in JSON. The JSON object must use this schema:\n{json.dumps(generate_json_schema(format), indent=4)}\nYour response should ONLY contain the JSON object and nothing else."
         copied_messages: list[Message] = copy.deepcopy(messages)
         inserted: bool = False
@@ -99,4 +99,4 @@ class GroqBase(AIBase):
             temperature=temperature if temperature else NOT_GIVEN,
             response_format={"type": "json_object"}
         )
-        return json_call(format, json.loads(response.choices[0].message.content))
+        return FormattedAssistantMessage(response.choices[0].message.content, json_call(format, json.loads(response.choices[0].message.content)))

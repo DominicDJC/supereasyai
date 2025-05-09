@@ -2,7 +2,7 @@ import os, json
 from types import FunctionType
 from typing import Any, Literal, Iterator
 from supereasyai.ai import AIBase, function_to_tool
-from supereasyai.messages import AssistantMessage, AssistantMessageStream, Message, ToolCall, pack_messages
+from supereasyai.messages import AssistantMessage, AssistantMessageStream, Message, ToolCall, pack_messages, FormattedAssistantMessage
 from doms_json import generate_json_schema, json_call
 from openai import OpenAI as OpenAIClient, Stream, NOT_GIVEN
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
@@ -41,9 +41,10 @@ class OpenAIAssistantMessageStream(AssistantMessageStream):
 
 
 class OpenAIBase(AIBase):
-    def __init__(self, api_key: str | None = None, api_environment_key: str = "AI_API_KEY"):
+    def __init__(self, api_key: str | None = None, api_environment_key: str = "AI_API_KEY", base_url: str | None = None):
         self.__client__: OpenAIClient = OpenAIClient(
-            api_key=(api_key if api_key else os.environ.get(api_environment_key))
+            api_key=(api_key if api_key else os.environ.get(api_environment_key)),
+            base_url=base_url
         )
         
     def query(self,
@@ -82,7 +83,7 @@ class OpenAIBase(AIBase):
               messages: list[Message],
               format: type,
               model: str | None = None,
-              temperature: float | None = None) -> Any:
+              temperature: float | None = None) -> FormattedAssistantMessage:
         response: ChatCompletion = self.__client__.chat.completions.create(
             model=model,
             messages=pack_messages(messages),
@@ -96,4 +97,4 @@ class OpenAIBase(AIBase):
                 }
             }
         )
-        return json_call(format, json.loads(response.choices[0].message.content))
+        return FormattedAssistantMessage(response.choices[0].message.content, json_call(format, json.loads(response.choices[0].message.content)))

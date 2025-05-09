@@ -90,6 +90,12 @@ class AssistantMessage(Message):
         return run_tool_calls(self.tool_calls, tool_functions)
 
 
+class FormattedAssistantMessage(AssistantMessage):
+    def __init__(self, content: str, formatted: Any) -> None:
+        super().__init__(content)
+        self.formatted: Any = formatted
+
+
 class AssistantMessageStream(Message):
     def __init__(self) -> None:
         self.__assistant_message__: AssistantMessage | None = None

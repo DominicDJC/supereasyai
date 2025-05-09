@@ -1,6 +1,6 @@
 from typing import Any, Literal
 from types import FunctionType
-from supereasyai.messages import AssistantMessage, AssistantMessageStream, Message, ToolMessage
+from supereasyai.messages import AssistantMessage, AssistantMessageStream, Message, ToolMessage, FormattedAssistantMessage
 from abc import ABC, abstractmethod
 from doms_json import generate_json_schema
 import inspect
@@ -61,7 +61,7 @@ class AI:
               messages: list[Message],
               format: type,
               model: str | None = None,
-              temperature: float | None = None) -> Any:
+              temperature: float | None = None) -> FormattedAssistantMessage:
         if model == None and self.model == None:
             raise NoModel("No model given. Either pass a model through the query function or set a model when creating the AI object.")
         return self.__base__.query_format(

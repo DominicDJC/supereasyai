@@ -3,7 +3,8 @@ from types import FunctionType
 from dotenv import load_dotenv
 from supereasyai import (
     AI, create_openai, create_groq, Message, SystemMessage, UserMessage, DeveloperMessage,
-    AssistantMessage, ToolMessage, ToolCall, AssistantMessageStream, pack_messages, unpack_messages
+    AssistantMessage, ToolMessage, ToolCall, AssistantMessageStream, pack_messages, unpack_messages,
+    FormattedAssistantMessage
 )
 
 load_dotenv()
@@ -211,6 +212,7 @@ def test_supereasyai(openai_api_key, openai_model, groq_api_key, groq_model):
         assert response[-1].content == "Meatballs"
         # Query with a format
         messages: list[Message] = [SystemMessage("Think through the user's request to ensure you calculate the correct answer.\nYour final answer should be exactly as shown in the following format:\n\"The answer is: {value}\""), UserMessage("What's 5 + 3?")]
-        response: Reasoning = ai.query_format(messages, Reasoning)
-        assert type(response) == Reasoning
-        assert response.answer == "The answer is: 8"
+        response: FormattedAssistantMessage = ai.query_format(messages, Reasoning)
+        assert type(response) == FormattedAssistantMessage
+        assert type(response.formatted) == Reasoning
+        assert response.formatted.answer == "The answer is: 8"

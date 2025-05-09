@@ -19,6 +19,7 @@ from supereasyai.messages import (
     ToolMessage,
     AssistantMessage,
     AssistantMessageStream,
+    FormattedAssistantMessage,
     pack_content,
     pack_tool_calls,
     pack_messages,
