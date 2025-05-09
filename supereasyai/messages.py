@@ -157,6 +157,8 @@ def pack_messages(messages: list[Message]) -> list[dict]:
                 data.pop("tool_calls")
             else:
                 data["tool_calls"] = pack_tool_calls(message.tool_calls)
+        if "formatted" in data:
+            data.pop("formatted")
         packed.append(data)
     return packed
 

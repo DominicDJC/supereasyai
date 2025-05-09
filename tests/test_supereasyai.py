@@ -56,6 +56,7 @@ def test_supereasyai(openai_api_key, openai_model, groq_api_key, groq_model):
         DeveloperMessage("Developer message"),
         UserMessage("User message"),
         AssistantMessage("Assistant message"),
+        FormattedAssistantMessage("{\"key\": \"value\"}", {"key": "value"}),
         AssistantMessage(tool_calls=[ToolCall("abc-123", "name", {"key": "value"})]),
         ToolMessage("abc-123", "name", "Tool message")
     ]
@@ -76,7 +77,10 @@ def test_supereasyai(openai_api_key, openai_model, groq_api_key, groq_model):
         {
             "role": "assistant",
             "content": "Assistant message",
-            "tool_calls": None
+        },
+        {
+            "role": "assistant",
+            "content": "{\"key\": \"value\"}",
         },
         {
             "role": "assistant",
@@ -101,10 +105,10 @@ def test_supereasyai(openai_api_key, openai_model, groq_api_key, groq_model):
     ]
     unpacked_messages: list[Message] = unpack_messages(packed_messages)
     for original, loaded in zip(messages, unpacked_messages):
-        assert type(original) == type(loaded)
+        assert type(original) == type(loaded) or (isinstance(original, AssistantMessage) and type(loaded) == AssistantMessage)
         assert original.role == loaded.role
         assert original.content == loaded.content
-        if type(original) == AssistantMessage and type(loaded) == AssistantMessage:
+        if isinstance(original, AssistantMessage) and type(loaded) == AssistantMessage:
             assert type(original.tool_calls) == type(loaded.tool_calls)
             if original.tool_calls != None and loaded.tool_calls != None:
                 for original_tool_call, loaded_tool_call in zip(original.tool_calls, loaded.tool_calls):
