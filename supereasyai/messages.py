@@ -164,7 +164,7 @@ def pack_messages(messages: list[Message]) -> list[dict]:
 
 def unpack_content(content: list[dict]) -> list[Content]:
     unpacked: list[Content] = []
-    for item in content:
+    for item in copy.deepcopy(content):
         content_type: type
         match item["type"]:
             case "text":
@@ -180,13 +180,13 @@ def unpack_content(content: list[dict]) -> list[Content]:
 
 def unpack_tool_calls(tool_calls: list[dict]) -> list[ToolCall]:
     unpacked: list[ToolCall] = []
-    for tool_call in tool_calls:
+    for tool_call in copy.deepcopy(tool_calls):
         unpacked.append(ToolCall(tool_call["id"], tool_call["function"]["name"], json.loads(tool_call["function"]["arguments"])))
     return unpacked
 
 def unpack_messages(messages: list[dict]) -> list[Message]:
     unpacked: list[Message] = []
-    for message in messages:
+    for message in copy.deepcopy(messages):
         message_type: type
         match message["role"]:
             case "system":
