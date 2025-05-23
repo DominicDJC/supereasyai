@@ -298,6 +298,12 @@ The AI can't get the secret until it knows the password, so it must first call t
 - ```ToolMessage``` - A response for the AI that would say ```"The secret is a good sauce"```
 - ```AssistantMessage``` - The AI would finally tell the user what the secret is.
 
+### Schemas
+
+The AIs understand tools and formats via JSON Schemas.
+
+supereasyai automatically creates these schemas with the [**doms-json**](https://github.com/DominicDJC/doms-json) Python package. To better understand the process, consider taking a look.
+
 ## Examples
 
 ### Simple Streamed Chatbot
