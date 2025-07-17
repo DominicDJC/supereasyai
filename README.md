@@ -4,6 +4,7 @@
 [![Tests](https://github.com/DominicDJC/supereasyai/actions/workflows/test.yml/badge.svg)](https://github.com/DominicDJC/supereasyai/actions/workflows/test.yml)
 [![Changelog](https://img.shields.io/github/v/release/DominicDJC/supereasyai?include_prereleases&label=changelog)](https://github.com/DominicDJC/supereasyai/releases)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/DominicDJC/supereasyai/blob/main/LICENSE)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/DominicDJC/supereasyai)
 
 A super easy AI LLM library.
 
