@@ -48,12 +48,27 @@ class GroqBase(AIBase):
         
     def query(self,
               messages: list[Message],
+              format: type | None = None,
               model: str | None = None,
               temperature: float | None = None,
               tools: list[dict | FunctionType] | None = None,
               tool_choice: Literal["none", "auto", "required"] | None = None,
               force_tool: str | None = None,
               stream: bool = False) -> AssistantMessage | GroqAssistantMessageStream:
+        if stream and format:
+            raise Exception("Cannot stream a formatted message")
+        if format:
+            schema_message: str = f"Your output must be in JSON. The JSON object must use this schema:\n{json.dumps(generate_json_schema(format), indent=4)}\nYour response should ONLY contain the JSON object and nothing else."
+            copied_messages: list[Message] = copy.deepcopy(messages)
+            inserted: bool = False
+            for message in copied_messages:
+                if message.role == "system":
+                    message.content += f"\n\n{schema_message}"
+                    inserted = True
+                    break
+            if not inserted:
+                copied_messages.insert(0, SystemMessage(schema_message))
+            messages = copied_messages
         tool_schemas: list[dict] | None = None
         if tools:
             tool_schemas = []
@@ -68,35 +83,14 @@ class GroqBase(AIBase):
             temperature=temperature if temperature else NOT_GIVEN,
             tools=tool_schemas if tool_schemas else NOT_GIVEN,
             tool_choice=({"type": "function", "function": {"name": force_tool}} if force_tool else (tool_choice if tool_choice else NOT_GIVEN)),
-            stream=stream
+            stream=stream,
+            response_format={"type": "json_object"} if format else NOT_GIVEN
         )
         if type(response) == ChatCompletion:
-            return AssistantMessage(
-                response.choices[0].message.content,
-                [ToolCall(tool_call.id, tool_call.function.name, json.loads(tool_call.function.arguments)) for tool_call in response.choices[0].message.tool_calls] if response.choices[0].message.tool_calls else None
-            )
+            content: str | None = response.choices[0].message.content
+            tool_calls: list[ToolCall] | None = [ToolCall(tool_call.id, tool_call.function.name, json.loads(tool_call.function.arguments)) for tool_call in response.choices[0].message.tool_calls] if response.choices[0].message.tool_calls else None
+            if format and content:
+                return FormattedAssistantMessage(content, json_call(format, json.loads(content)), tool_calls)
+            return AssistantMessage(content, tool_calls)
         else:
             return GroqAssistantMessageStream(response)
-    
-    def query_format(self,
-              messages: list[Message],
-              format: type,
-              model: str | None = None,
-              temperature: float | None = None) -> FormattedAssistantMessage:
-        schema_message: str = f"Your output must be in JSON. The JSON object must use this schema:\n{json.dumps(generate_json_schema(format), indent=4)}\nYour response should ONLY contain the JSON object and nothing else."
-        copied_messages: list[Message] = copy.deepcopy(messages)
-        inserted: bool = False
-        for message in copied_messages:
-            if message.role == "system":
-                message.content += f"\n\n{schema_message}"
-                inserted = True
-                break
-        if not inserted:
-            copied_messages.insert(0, SystemMessage(schema_message))
-        response: ChatCompletion = self.__client__.chat.completions.create(
-            model=model,
-            messages=pack_messages(copied_messages),
-            temperature=temperature if temperature else NOT_GIVEN,
-            response_format={"type": "json_object"}
-        )
-        return FormattedAssistantMessage(response.choices[0].message.content, json_call(format, json.loads(response.choices[0].message.content)))

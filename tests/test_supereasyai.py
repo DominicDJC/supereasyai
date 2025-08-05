@@ -216,7 +216,16 @@ def test_supereasyai(openai_api_key, openai_model, groq_api_key, groq_model):
         assert response[-1].content == "Meatballs"
         # Query with a format
         messages: list[Message] = [SystemMessage("Think through the user's request to ensure you calculate the correct answer.\nYour final answer should be exactly as shown in the following format:\n\"The answer is: {value}\""), UserMessage("What's 5 + 3?")]
-        response: FormattedAssistantMessage = ai.query_format(messages, Reasoning)
+        response: FormattedAssistantMessage = ai.query(messages, format=Reasoning)
         assert type(response) == FormattedAssistantMessage
         assert type(response.formatted) == Reasoning
         assert response.formatted.answer == "The answer is: 8"
+        # Query with tool calls and a format
+        if ai != groq:
+            tools: list[FunctionType] = [get_password, get_secret]
+            messages: list[Message] = [SystemMessage("Get and return the secret value.\n To get the secret, you must first get the password.\nYour answer must be just the secret word, exactly. Nothing else.")]
+            response: list[FormattedAssistantMessage | ToolMessage] = ai.query_and_run_tools(messages, format=Reasoning, tools=tools, autonomy="full")
+            assert type(response[-1]) == FormattedAssistantMessage
+            assert type(response[-1].formatted) == Reasoning
+            assert response[-1].tool_calls == None
+            assert response[-1].formatted.answer == "Meatballs"

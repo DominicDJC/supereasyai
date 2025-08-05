@@ -147,7 +147,7 @@ print(unpack_messages(messages))
 
 There are *three* different ways to query an AI with supereasyai:
 - A standard query via ```query```
-- A format query that converts the response to a python object via ```query_format```
+- A format query that converts the response to a python object via ```query``` with the ```format``` parameter
 - An automated query that automatically runs any called tools with variable autonomy via ```query_and_run_tools```
 
 ### Query
@@ -187,9 +187,11 @@ print(response.content)
 
 ### Query Format
 
-In some scenarios, you may want an AI's response to be restricted to a specific format. This can be easily achieved via ```query_format```.
+In some scenarios, you may want an AI's response to be restricted to a specific format. This can be easily achieved via the ```format``` parameter.
 
-```query_format``` expects a ```format``` input, which would be an object type. It'll then convert that object to a JSON schema.
+The ```format``` parameter should be an object type, which will be automatically converted into a JSON schema for the AI to interpret.
+
+Responses when using ```format``` will come back as a ```FormattedAssistantMessage```. It extends ```AssistantMessage``` but also holds the formatted response in the object type provided as the ```format```
 
 ```python
 class MathReasoning:
@@ -197,12 +199,14 @@ class MathReasoning:
         self.steps: list[str] = steps
         self.answer: str = answer
 
-response: MathReasoning = ai.query_format(
+response: FormattedAssistantMessage = ai.query(
     messages=[UserMessage("What is 2 + 2?")],
     format=MathReasoning
 )
-print(response.steps)
-print(response.answer)
+formatted: MathReasoning = response.formatted
+
+print(formatted.steps)
+print(formatted.answer)
 
 # The printed output would probably look something like this:
 # ["Start with the number 2.", "Add another 2 to it.", "2 + 2 equals 4."]
@@ -389,7 +393,7 @@ ai: AI = create_groq(
 )
 
 user_input: str = input("Your scene prompt: ")
-scene: Scene = ai.query_format(
+response: FormattedAssistantMessage = ai.query(
     messages=[
         SystemMessage(PROMPT),
         UserMessage(user_input)
@@ -397,6 +401,7 @@ scene: Scene = ai.query_format(
     format=Scene,
     model="llama-3.3-70b-versatile"
 )
+scene: Scene = response.formatted
 ```
 
 ## Development

@@ -91,8 +91,8 @@ class AssistantMessage(Message):
 
 
 class FormattedAssistantMessage(AssistantMessage):
-    def __init__(self, content: str, formatted: Any) -> None:
-        super().__init__(content)
+    def __init__(self, content: str, formatted: Any, tool_calls: list[ToolCall] | None = None) -> None:
+        super().__init__(content, tool_calls)
         self.formatted: Any = formatted
 
 

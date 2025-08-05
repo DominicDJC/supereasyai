@@ -49,12 +49,15 @@ class OpenAIBase(AIBase):
         
     def query(self,
               messages: list[Message],
+              format: type | None = None,
               model: str | None = None,
               temperature: float | None = None,
               tools: list[dict | FunctionType] | None = None,
               tool_choice: Literal["none", "auto", "required"] | None = None,
               force_tool: str | None = None,
               stream: bool = False) -> AssistantMessage | OpenAIAssistantMessageStream:
+        if stream and format:
+            raise Exception("Cannot stream a formatted message")
         tool_schemas: list[dict] | None = None
         if tools:
             tool_schemas = []
@@ -67,27 +70,6 @@ class OpenAIBase(AIBase):
             model=model,
             messages=pack_messages(messages),
             temperature=temperature if temperature else NOT_GIVEN,
-            tools=tool_schemas if tool_schemas else NOT_GIVEN,
-            tool_choice=({"type": "function", "function": {"name": force_tool}} if force_tool else (tool_choice if tool_choice else NOT_GIVEN)),
-            stream=stream
-        )
-        if type(response) == ChatCompletion:
-            return AssistantMessage(
-                response.choices[0].message.content,
-                [ToolCall(tool_call.id, tool_call.function.name, json.loads(tool_call.function.arguments)) for tool_call in response.choices[0].message.tool_calls] if response.choices[0].message.tool_calls else None
-            )
-        else:
-            return OpenAIAssistantMessageStream(response)
-    
-    def query_format(self,
-              messages: list[Message],
-              format: type,
-              model: str | None = None,
-              temperature: float | None = None) -> FormattedAssistantMessage:
-        response: ChatCompletion = self.__client__.chat.completions.create(
-            model=model,
-            messages=pack_messages(messages),
-            temperature=temperature if temperature else NOT_GIVEN,
             response_format={
                 "type": "json_schema",
                 "json_schema": {
@@ -95,6 +77,16 @@ class OpenAIBase(AIBase):
                     "schema": generate_json_schema(format),
                     "strict": True
                 }
-            }
+            } if format else NOT_GIVEN,
+            tools=tool_schemas if tool_schemas else NOT_GIVEN,
+            tool_choice=({"type": "function", "function": {"name": force_tool}} if force_tool else (tool_choice if tool_choice else NOT_GIVEN)),
+            stream=stream
         )
-        return FormattedAssistantMessage(response.choices[0].message.content, json_call(format, json.loads(response.choices[0].message.content)))
+        if type(response) == ChatCompletion:
+            content: str | None = response.choices[0].message.content
+            tool_calls: list[ToolCall] | None = [ToolCall(tool_call.id, tool_call.function.name, json.loads(tool_call.function.arguments)) for tool_call in response.choices[0].message.tool_calls] if response.choices[0].message.tool_calls else None
+            if format and content:
+                return FormattedAssistantMessage(content, json_call(format, json.loads(content)), tool_calls)
+            return AssistantMessage(content, tool_calls)
+        else:
+            return OpenAIAssistantMessageStream(response)
