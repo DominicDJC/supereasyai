@@ -35,8 +35,8 @@ from supereasyai.bases import (
 )
 
 
-def create_openai(api_key: str | None = None, model: str | None = None, api_environment_key: str = "AI_API_KEY") -> AI:
-    return AI(base=OpenAIBase(api_key=api_key, api_environment_key=api_environment_key), model=model)
+def create_openai(api_key: str | None = None, model: str | None = None, api_environment_key: str = "AI_API_KEY", base_url: str | None = None) -> AI:
+    return AI(base=OpenAIBase(api_key=api_key, api_environment_key=api_environment_key, base_url=base_url), model=model)
 
 def create_groq(api_key: str | None = None, model: str | None = None, api_environment_key: str = "AI_API_KEY") -> AI:
     return AI(base=GroqBase(api_key=api_key, api_environment_key=api_environment_key), model=model)
