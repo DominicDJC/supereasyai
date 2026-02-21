@@ -98,5 +98,5 @@ class GroqBase(AIBase):
     def get_models(self):
         models: list[str] = []
         for model in list(self.__client__.models.list())[0][1]:
-            models.append(model[0])
+            models.append(model.id)
         return models
