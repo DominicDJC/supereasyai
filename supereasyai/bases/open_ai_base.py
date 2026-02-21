@@ -90,3 +90,9 @@ class OpenAIBase(AIBase):
             return AssistantMessage(content, tool_calls)
         else:
             return OpenAIAssistantMessageStream(response)
+    
+    def get_models(self):
+        models: list[str] = []
+        for model in self.__client__.models.list():
+            models.append(model.id)
+        return models

@@ -23,6 +23,10 @@ class AIBase(ABC):
               force_tool: str | None = None,
               stream: bool = False) -> AssistantMessage | AssistantMessageStream:
         raise NotImplementedError()
+    
+    @abstractmethod
+    def get_models(self) -> list[str]:
+        raise NotImplementedError()
 
 
 class AI:
@@ -72,6 +76,9 @@ class AI:
             if autonomy != "full" or response.tool_calls == None:
                 break
         return return_messages
+    
+    def get_models(self) -> list[str]:
+        return self.__base__.get_models()
 
 
 

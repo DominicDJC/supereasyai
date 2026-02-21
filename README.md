@@ -73,6 +73,15 @@ ai.query(
 )
 ```
 
+## Getting Available Models
+
+You can get a list of available models:
+
+```python
+# Prints a string list of all available models
+print(ai.get_models())
+```
+
 ## Messages
 
 When querying an AI, you need to pass in an array of messages. There are multiple types of messages, but they are all built upon the base ```Message``` class.
